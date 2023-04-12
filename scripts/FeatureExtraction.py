@@ -22,13 +22,14 @@ def extractFeatures(img, ext):
 
 def computeEuclideanDistance(desc_a, desc_b):
     mat = []
-    for d_a in desc_a:
-        for d_b in desc_b:
-            d = np.linalg.norm([d_a, d_b])
-            # print(f'\nImage 1: {d_a}\nImage 2: {d_b}')
-            # print(f'Euclidian Distance: {d}')
-            mat.append(d)
 
+    for i, d_a in enumerate(desc_a):
+        a = np.array(d_a)
+        for j,d_b in enumerate(desc_b):
+            b = np.array(d_b)
+            d = np.linalg.norm(b-a)
+            if d == 0:
+                mat.append([i,j])
 
     print(mat)
 
@@ -39,7 +40,7 @@ if __name__ == '__main__':
     ## Extract the image
     img = cv.imread('../imgs/ellie.jpg')
 
-    # Create the SIFT feature extractor
+    ## Create the SIFT feature extractor
     gs_img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     sift = cv.SIFT_create()
 
@@ -49,4 +50,4 @@ if __name__ == '__main__':
     img_descriptors.append(des)
 
     computeEuclideanDistance(img_descriptors[0], img_descriptors[1])
-    # drawImages(gs_img, kp, img)
+    drawImages(gs_img, kp, img)
