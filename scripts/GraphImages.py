@@ -55,9 +55,11 @@ for node in G.nodes():
     node_positions.append(G.nodes[node]['pos'])
 node_positions = torch.tensor(node_positions)
 
-# Create PyTorch geometric data 
-print(A.coalesce().indices())
-data = Data(x=node_features.float(), pos=node_positions.float(), edge_index=A.coalesce().indices(), edge_attr=None)
+# Convert edge_index to COO format
+edge_index = torch.tensor(np.array(A.nonzero()), dtype=torch.long)
+
+# Create PyTorch geometric data
+data = Data(x=node_features.float(), pos=node_positions.float(), edge_index=edge_index, edge_attr=None)
 
 # Normalize node positions to be in [-1,1] range
 data.pos = (data.pos - data.pos.min(dim=0).values) / (data.pos.max(dim=0).values - data.pos.min(dim=0).values) * 2 - 1
