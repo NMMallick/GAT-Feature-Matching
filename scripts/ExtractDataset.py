@@ -7,6 +7,9 @@ from torch_geometric.data import Data
 from torch_geometric.nn import GATConv
 from sklearn.model_selection import train_test_split
 
+#
+import GAT
+
 # Load two images
 img1 = cv2.imread('../imgs/ellie.jpg', cv2.IMREAD_GRAYSCALE)
 img2 = cv2.imread('../imgs/ellie.jpg', cv2.IMREAD_GRAYSCALE)
@@ -26,11 +29,13 @@ matches = sorted(matches, key=lambda x:x.distance)
 # Get top k matches
 k = 50
 matches = matches[:k]
+print(kp1[0])
 
 # Create graph and add nodes
 G = nx.Graph()
 for i in range(len(kp1)):
-    G.add_node(i, pos=(kp1[i].pt[0], kp1[i].pt[1]), img=1)
+    G.add_node(i, pos=(kp1[i].pt[0],
+    kp1[i].pt[1]), img=1)
 for i in range(len(kp2)):
     G.add_node(i+len(kp1), pos=(kp2[i].pt[0], kp2[i].pt[1]), img=2)
 
@@ -41,6 +46,9 @@ for match in matches:
     G.add_edge(i1, i2)
 
 # Convert graph to PyTorch Geometric Data object
+print(np.zeros((G.number_of_nodes(), des1.shape[1] + 2)).astype(np.float32))
+print('Tensor')
+print(torch.LongTensor(np.array(list(G.edges)).T))
 data = Data(
     x=torch.from_numpy(np.zeros((G.number_of_nodes(), des1.shape[1] + 2)).astype(np.float32)),
     edge_index=torch.LongTensor(np.array(list(G.edges)).T),
@@ -55,7 +63,13 @@ data.x[:, -2:] = torch.from_numpy(pos_array.astype(np.float32))
 data.y[len(kp1):] = 1
 
 # Split data into training and validation sets
-# train_data, val_data = train_test_split(data, test_size=0.5)
+train, test = train_test_split(list(data), test_size=0.2)
+# print(f'Training set size: {len(train)}')
+# print(f'Test set size: {len(test)}')
+print(data.num_features)
 
-print(data)
-train_test_split(data.tolist(), test_size=0.2)
+## Create the model
+gat = GAT.GAT(data.num_features, 8, data.num_nodes)
+# print(gat)
+GAT.train(gat, data)
+
